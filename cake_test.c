@@ -93,13 +93,13 @@ void test_v2() {
 }
 
 void test_r2() {
-    Cake_R2 r = cake_r2_new(0.0f, 0.0f, -1.0f, -2.0f);
-    TEST(r.x == -1.0f);
+    Cake_R2 r = cake_r2_new(1.0f, 1.0f, -3.0f, -3.0f);
+    TEST(r.x == -2.0f);
     TEST(r.y == -2.0f);
-    TEST(r.w == 1.0f);
-    TEST(r.h == 2.0f);
+    TEST(r.w == 3.0f);
+    TEST(r.h == 3.0f);
 
-    TEST(cake_r2_has_point(r, cake_v2_new(0.0f, 0.0f)) == true);
+    TEST(cake_r2_has_point(r, cake_v2_new(r.x, r.y)) == true);
     TEST(cake_r2_has_point(r, cake_v2_new(r.x + r.w, r.y + r.h)) == true);
 
     TEST(cake_r2_has_intersection(r, cake_r2_new(r.x, r.y, 0.0f, 0.0f)) == true);
