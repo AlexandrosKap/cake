@@ -32,21 +32,28 @@ typedef enum Cake_Anchor {
 
 float cake_min(float a, float b);
 float cake_max(float a, float b);
-float cake_sign(float n);
-float cake_abs(float n);
-float cake_floor(float n);
-float cake_ceil(float n);
-float cake_round(float n);
-float cake_sqrt(float n);
-float cake_factorial(float n);
-float cake_exp(float n);
-float cake_ln(float n);
-float cake_pow(float n, float power);
-float cake_clamp(float n, float a, float b);
-float cake_wrap(float n, float a, float b);
-float cake_stepify(float n, float step);
+float cake_sign(float x);
+float cake_abs(float x);
+float cake_floor(float x);
+float cake_ceil(float x);
+float cake_round(float x);
+float cake_sqrt(float x);
+float cake_factorial(float x);
+float cake_exp(float x);
+float cake_ln(float x);
+float cake_pow(float x, float n);
+float cake_clamp(float x, float a, float b);
+float cake_wrap(float x, float a, float b);
+float cake_stepify(float x, float step);
+
+float cake_lerp(float a, float b, float weight);
+float cake_smoothstep(float a, float b, float weight);
+float cake_smootherstep(float a, float b, float weight);
 float cake_move(float a, float b, float delta);
 float cake_move_with(float a, float b, float delta, float slowdown);
+float cake_cubic_in(float x);
+float cake_cubic_out(float x);
+float cake_cubic_in_out(float x);
 
 Cake_V2 cake_v2_new(float x, float y);
 Cake_V2 cake_v2_add(Cake_V2 a, Cake_V2 b);
@@ -99,60 +106,60 @@ float cake_max(float a, float b) {
     return a <= b ? b : a;
 }
 
-float cake_sign(float n) {
-    return n <= 0.0f ? -1.0f : 1.0f;
+float cake_sign(float x) {
+    return x <= 0.0f ? -1.0f : 1.0f;
 }
 
-float cake_abs(float n) {
-    return n <= 0.0f ? -n : n;
+float cake_abs(float x) {
+    return x <= 0.0f ? -x : x;
 }
 
-float cake_floor(float n) {
-    float floored = CAKE_CAST(float) CAKE_CAST(int) n;
-    return (n <= 0.0f && floored != n) ? floored - 1.0f : floored;
+float cake_floor(float x) {
+    float floored = CAKE_CAST(float) CAKE_CAST(int) x;
+    return (x <= 0.0f && floored != x) ? floored - 1.0f : floored;
 }
 
-float cake_ceil(float n) {
-    float ceiled = CAKE_CAST(float) CAKE_CAST(int) n;
-    return (n <= 0.0f || ceiled == n) ? ceiled : ceiled + 1.0f;
+float cake_ceil(float x) {
+    float ceiled = CAKE_CAST(float) CAKE_CAST(int) x;
+    return (x <= 0.0f || ceiled == x) ? ceiled : ceiled + 1.0f;
 }
 
-float cake_round(float n) {
-    return n <= 0.0f ? CAKE_CAST(float) CAKE_CAST(int) (n - 0.5f) : CAKE_CAST(float) CAKE_CAST(int) (n + 0.5f);
+float cake_round(float x) {
+    return x <= 0.0f ? CAKE_CAST(float) CAKE_CAST(int) (x - 0.5f) : CAKE_CAST(float) CAKE_CAST(int) (x + 0.5f);
 }
 
-float cake_sqrt(float n) {
-    float result = n / 2.0f;
+float cake_sqrt(float x) {
+    float result = x / 2.0f;
     float temp = 0.0f;
     while (result != temp) {
         temp = result;
-        result = (n / temp + temp) / 2.0f;
+        result = (x / temp + temp) / 2.0f;
     }
     return result;
 }
 
-float cake_factorial(float n) {
+float cake_factorial(float x) {
     float result = 1.0f;
-    for (int i = 2; i <= CAKE_CAST(int) n; i += 1) {
+    for (int i = 2; i <= CAKE_CAST(int) x; i += 1) {
         result *= CAKE_CAST(float) i;
     }
     return result;
 }
 
-float cake_exp(float n) {
+float cake_exp(float x) {
     float result = 0.0f;
     int approximation = 10;
     for (int i = 0; i < approximation; i += 1) {
 
         float pow;
-        float pow_n = n;
-        int pow_power = i;
-        if (pow_power == 0) {
+        float pow_x = x;
+        int pow_n = i;
+        if (pow_n == 0) {
             pow = 1.0f;
         } else {
-            pow = pow_n;
-            for (int j = 1; j < pow_power; j += 1) {
-                pow *= pow_n;
+            pow = pow_x;
+            for (int j = 1; j < pow_n; j += 1) {
+                pow *= pow_x;
             }
         }
 
@@ -161,20 +168,20 @@ float cake_exp(float n) {
     return result;
 }
 
-float cake_ln(float n) {
+float cake_ln(float x) {
     float result = 0.0f;
     int approximation = 10;
     for (int i = 1; i < approximation; i += 1) {
 
         float pow;
-        float pow_n = (n - 1.0f) / (n + 1.0f);
-        int pow_power = 2 * i - 1;
-        if (pow_power == 0) {
+        float pow_x = (x - 1.0f) / (x + 1.0f);
+        int pow_n = 2 * i - 1;
+        if (pow_n == 0) {
             pow = 1.0f;
         } else {
-            pow = pow_n;
-            for (int j = 1; j < pow_power; j += 1) {
-                pow *= pow_n;
+            pow = pow_x;
+            for (int j = 1; j < pow_n; j += 1) {
+                pow *= pow_x;
             }
         }
 
@@ -184,30 +191,30 @@ float cake_ln(float n) {
     return result;
 }
 
-float cake_pow(float n, float power) {
+float cake_pow(float x, float n) {
     // From: https://gist.github.com/serg06/38760a4b5aceb4c6245d61c56716588c
     
     float pow;
-    float pow_n = n;
-    int pow_power = CAKE_CAST(int) power;
-    if (pow_power == 0) {
+    float pow_x = x;
+    int pow_n = CAKE_CAST(int) n;
+    if (pow_n == 0) {
         pow = 1.0f;
     } else {
-        pow = pow_n;
-        for (int j = 1; j < pow_power; j += 1) {
-            pow *= pow_n;
+        pow = pow_x;
+        for (int j = 1; j < pow_n; j += 1) {
+            pow *= pow_x;
         }
     }
 
-    return pow * cake_exp((power - CAKE_CAST(float) pow_power) * cake_ln(n));
+    return pow * cake_exp((n - CAKE_CAST(float) pow_n) * cake_ln(x));
 }
 
-float cake_clamp(float n, float a, float b) {
-    return n <= a ? a : n >= b ? b : n;
+float cake_clamp(float x, float a, float b) {
+    return x <= a ? a : x >= b ? b : x;
 }
 
-float cake_wrap(float n, float a, float b) {
-    float result = n;
+float cake_wrap(float x, float a, float b) {
+    float result = x;
     float delta = b - a;
     while (result < a) {
         result += delta;
@@ -218,8 +225,22 @@ float cake_wrap(float n, float a, float b) {
     return result;
 }
 
-float cake_stepify(float n, float step) {
-    return step * cake_round(n / step);
+float cake_stepify(float x, float step) {
+    return step * cake_round(x / step);
+}
+
+float cake_lerp(float a, float b, float weight) {
+    return a + (b - a) * weight;
+}
+
+float cake_smoothstep(float a, float b, float weight) {
+    float v = weight * weight * (3.0f - 2.0f * weight);
+    return (b * v) + (a * (1.0f - v));
+}
+
+float cake_smootherstep(float a, float b, float weight) {
+    float v = weight * weight * weight * (weight * (weight * 6.0f - 15.0f) + 10.0f);
+    return (b * v) + (a * (1.0f - v));
 }
 
 float cake_move(float a, float b, float delta) {
@@ -233,6 +254,22 @@ float cake_move(float a, float b, float delta) {
 float cake_move_with(float a, float b, float delta, float slowdown) {
     float target = ((a * (slowdown - 1.0f)) + b) / slowdown;
     return a + (target - a) * delta;
+}
+
+float cake_cubic_in(float x) {
+    return x * x * x;
+}
+
+float cake_cubic_out(float x) {
+    return 1.0f - cake_pow(1.0f - x, 3.0f);
+}
+
+float cake_cubic_in_out(float x) {
+    if (x < 0.5f) {
+        return 4.0f * x * x * x;
+    } else {
+        return 1.0f - cake_pow(-2.0f * x + 2.0f, 3.0f) / 2.0f;
+    }
 }
 
 Cake_V2 cake_v2_new(float x, float y) {
