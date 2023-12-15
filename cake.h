@@ -38,6 +38,10 @@ float cake_floor(float n);
 float cake_ceil(float n);
 float cake_round(float n);
 float cake_sqrt(float n);
+float cake_factorial(float n);
+float cake_exp(float n);
+float cake_ln(float n);
+float cake_pow(float n, float power);
 float cake_clamp(float n, float a, float b);
 float cake_wrap(float n, float a, float b);
 float cake_stepify(float n, float step);
@@ -125,6 +129,77 @@ float cake_sqrt(float n) {
         result = (n / temp + temp) / 2.0f;
     }
     return result;
+}
+
+float cake_factorial(float n) {
+    float result = 1.0f;
+    for (int i = 2; i <= CAKE_CAST(int) n; i += 1) {
+        result *= CAKE_CAST(float) i;
+    }
+    return result;
+}
+
+float cake_exp(float n) {
+    float result = 0.0f;
+    int approximation = 10;
+    for (int i = 0; i < approximation; i += 1) {
+
+        float pow;
+        float pow_n = n;
+        int pow_power = i;
+        if (pow_power == 0) {
+            pow = 1.0f;
+        } else {
+            pow = pow_n;
+            for (int j = 1; j < pow_power; j += 1) {
+                pow *= pow_n;
+            }
+        }
+
+        result += pow / cake_factorial(CAKE_CAST(float) i);
+    }
+    return result;
+}
+
+float cake_ln(float n) {
+    float result = 0.0f;
+    int approximation = 10;
+    for (int i = 1; i < approximation; i += 1) {
+
+        float pow;
+        float pow_n = (n - 1.0f) / (n + 1.0f);
+        int pow_power = 2 * i - 1;
+        if (pow_power == 0) {
+            pow = 1.0f;
+        } else {
+            pow = pow_n;
+            for (int j = 1; j < pow_power; j += 1) {
+                pow *= pow_n;
+            }
+        }
+
+        result += pow / (2.0f * CAKE_CAST(float) i - 1.0f);
+    }
+    result *= 2.0f;
+    return result;
+}
+
+float cake_pow(float n, float power) {
+    // From: https://gist.github.com/serg06/38760a4b5aceb4c6245d61c56716588c
+    
+    float pow;
+    float pow_n = n;
+    int pow_power = CAKE_CAST(int) power;
+    if (pow_power == 0) {
+        pow = 1.0f;
+    } else {
+        pow = pow_n;
+        for (int j = 1; j < pow_power; j += 1) {
+            pow *= pow_n;
+        }
+    }
+
+    return pow * cake_exp((power - CAKE_CAST(float) pow_power) * cake_ln(n));
 }
 
 float cake_clamp(float n, float a, float b) {
@@ -249,7 +324,7 @@ Cake_R2 cake_r2_new(float x, float y, float w, float h) {
         result.y = y;
         result.h = h;
     } else {
-        result.y = y + w;
+        result.y = y + h;
         result.h = -h;
     }
     return result;
